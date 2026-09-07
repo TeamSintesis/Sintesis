@@ -1,0 +1,1045 @@
+{
+  "entities": [
+    {
+      "model": "Prodi",
+      "table": "prodi",
+      "resource_type": "prodi",
+      "phase": "masukan",
+      "label": "Program Studi",
+      "columns": [
+        {
+          "name": "nama_prodi",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        },
+        {
+          "name": "fakultas",
+          "type": "string",
+          "length": 100,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "Dosen",
+      "table": "dosen",
+      "resource_type": "dosen",
+      "phase": "masukan",
+      "label": "Dosen/Peneliti",
+      "columns": [
+        {
+          "name": "nidn",
+          "type": "string",
+          "length": 10,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "nama",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        },
+        {
+          "name": "jabatan_fungsional",
+          "type": "string",
+          "length": 50,
+          "nullable": true
+        },
+        {
+          "name": "bidang_kepakaran",
+          "type": "string",
+          "length": 150,
+          "nullable": true
+        },
+        {
+          "name": "id_sinta",
+          "type": "string",
+          "length": 20,
+          "nullable": true
+        },
+        {
+          "name": "scopus_id",
+          "type": "string",
+          "length": 20,
+          "nullable": true
+        },
+        {
+          "name": "orcid",
+          "type": "string",
+          "length": 25,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "prodi_id",
+          "references": "prodi",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Mahasiswa",
+      "table": "mahasiswa",
+      "resource_type": "mahasiswa",
+      "phase": "masukan",
+      "label": "Mahasiswa",
+      "columns": [
+        {
+          "name": "nim",
+          "type": "string",
+          "length": 15,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "nama",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "prodi_id",
+          "references": "prodi",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Renstra",
+      "table": "renstra",
+      "resource_type": "renstra",
+      "phase": "masukan",
+      "label": "Rencana Strategis",
+      "columns": [
+        {
+          "name": "jenis",
+          "type": "enum",
+          "values": [
+            "penelitian",
+            "pkm"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "periode_mulai",
+          "type": "year",
+          "nullable": false
+        },
+        {
+          "name": "periode_akhir",
+          "type": "year",
+          "nullable": false
+        },
+        {
+          "name": "dokumen_url",
+          "type": "string",
+          "length": 255,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "PetaJalan",
+      "table": "peta_jalan",
+      "resource_type": "peta-jalan",
+      "phase": "masukan",
+      "label": "Peta Jalan Penelitian/PkM",
+      "columns": [
+        {
+          "name": "bidang_keilmuan",
+          "type": "string",
+          "length": 150,
+          "nullable": false
+        },
+        {
+          "name": "tahun",
+          "type": "year",
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "renstra_id",
+          "references": "renstra",
+          "nullable": false
+        },
+        {
+          "column": "prodi_id",
+          "references": "prodi",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Pedoman",
+      "table": "pedoman",
+      "resource_type": "pedoman",
+      "phase": "masukan",
+      "label": "Pedoman dan Kode Etik",
+      "columns": [
+        {
+          "name": "jenis",
+          "type": "string",
+          "length": 50,
+          "nullable": false
+        },
+        {
+          "name": "versi",
+          "type": "string",
+          "length": 20,
+          "nullable": false
+        },
+        {
+          "name": "tanggal_berlaku",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "dokumen_url",
+          "type": "string",
+          "length": 255,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "SaranaPrasarana",
+      "table": "sarana_prasarana",
+      "resource_type": "sarana-prasarana",
+      "phase": "masukan",
+      "label": "Sarana dan Prasarana",
+      "columns": [
+        {
+          "name": "nama_sarpras",
+          "type": "string",
+          "length": 150,
+          "nullable": false
+        },
+        {
+          "name": "lokasi",
+          "type": "string",
+          "length": 100,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "tersedia",
+            "digunakan",
+            "rusak"
+          ],
+          "nullable": false,
+          "default": "tersedia"
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "SkemaPendanaan",
+      "table": "skema_pendanaan",
+      "resource_type": "skema-pendanaan",
+      "phase": "masukan",
+      "label": "Skema Pendanaan",
+      "columns": [
+        {
+          "name": "nama_skema",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        },
+        {
+          "name": "jenis",
+          "type": "enum",
+          "values": [
+            "internal",
+            "eksternal"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "plafon_dana",
+          "type": "decimal",
+          "precision": 15,
+          "scale": 2,
+          "nullable": false
+        },
+        {
+          "name": "sumber_dana",
+          "type": "string",
+          "length": 100,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "Mitra",
+      "table": "mitra",
+      "resource_type": "mitra",
+      "phase": "masukan",
+      "label": "Mitra Eksternal",
+      "columns": [
+        {
+          "name": "nama_mitra",
+          "type": "string",
+          "length": 150,
+          "nullable": false
+        },
+        {
+          "name": "jenis_mitra",
+          "type": "enum",
+          "values": [
+            "industri",
+            "pemda",
+            "masyarakat",
+            "pt_lain"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "kontak",
+          "type": "string",
+          "length": 100,
+          "nullable": true
+        },
+        {
+          "name": "alamat",
+          "type": "string",
+          "length": 200,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "model": "Proposal",
+      "table": "proposal",
+      "resource_type": "proposal",
+      "phase": "proses",
+      "label": "Proposal Penelitian/PkM",
+      "columns": [
+        {
+          "name": "judul",
+          "type": "string",
+          "length": 250,
+          "nullable": false
+        },
+        {
+          "name": "jenis",
+          "type": "enum",
+          "values": [
+            "penelitian",
+            "pkm"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "tahun_usulan",
+          "type": "year",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "draft",
+            "diajukan",
+            "direview",
+            "disetujui",
+            "ditolak"
+          ],
+          "nullable": false,
+          "default": "draft"
+        },
+        {
+          "name": "rab_total",
+          "type": "decimal",
+          "precision": 15,
+          "scale": 2,
+          "nullable": false
+        },
+        {
+          "name": "berisiko_etik",
+          "type": "boolean",
+          "nullable": false,
+          "default": false,
+          "note": "Atribut implementasi tambahan (tidak ada pada kamus data awal) untuk mendukung relasi <<extend>> Ajukan Klirens Etik pada use case Fase Proses."
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": false,
+          "note": "Dosen pengusul/ketua tim (nidn_pengusul)",
+          "relation_name": "pengusul"
+        },
+        {
+          "column": "skema_pendanaan_id",
+          "references": "skema_pendanaan",
+          "nullable": false
+        },
+        {
+          "column": "peta_jalan_id",
+          "references": "peta_jalan",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "model": "AnggotaTim",
+      "table": "anggota_tim",
+      "resource_type": "anggota-tim",
+      "phase": "proses",
+      "label": "Anggota Tim Proposal",
+      "columns": [
+        {
+          "name": "peran",
+          "type": "string",
+          "length": 50,
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        },
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": true
+        },
+        {
+          "column": "mahasiswa_id",
+          "references": "mahasiswa",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "model": "Penilaian",
+      "table": "penilaian",
+      "resource_type": "penilaian",
+      "phase": "proses",
+      "label": "Penilaian Proposal",
+      "columns": [
+        {
+          "name": "skor",
+          "type": "decimal",
+          "precision": 5,
+          "scale": 2,
+          "nullable": true
+        },
+        {
+          "name": "komentar",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "status_finalisasi",
+          "type": "boolean",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "tanggal",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        },
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": false,
+          "note": "Reviewer (nidn_reviewer)",
+          "relation_name": "reviewer"
+        }
+      ]
+    },
+    {
+      "model": "KlirensEtik",
+      "table": "klirens_etik",
+      "resource_type": "klirens-etik",
+      "phase": "proses",
+      "label": "Klirens Etik",
+      "columns": [
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "diajukan",
+            "ditinjau",
+            "disetujui",
+            "ditolak"
+          ],
+          "nullable": false,
+          "default": "diajukan"
+        },
+        {
+          "name": "nomor_sertifikat",
+          "type": "string",
+          "length": 50,
+          "nullable": true
+        },
+        {
+          "name": "tanggal_terbit",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Kontrak",
+      "table": "kontrak",
+      "resource_type": "kontrak",
+      "phase": "proses",
+      "label": "Kontrak Penugasan",
+      "columns": [
+        {
+          "name": "nomor_sk",
+          "type": "string",
+          "length": 50,
+          "nullable": false
+        },
+        {
+          "name": "tanggal_kontrak",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "nilai_kontrak",
+          "type": "decimal",
+          "precision": 15,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "PencairanDana",
+      "table": "pencairan_dana",
+      "resource_type": "pencairan-dana",
+      "phase": "proses",
+      "label": "Pencairan Dana",
+      "columns": [
+        {
+          "name": "termin",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "jumlah",
+          "type": "decimal",
+          "precision": 15,
+          "scale": 2,
+          "nullable": false
+        },
+        {
+          "name": "tanggal",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "dijadwalkan",
+            "dicairkan",
+            "tertunda"
+          ],
+          "nullable": false,
+          "default": "dijadwalkan"
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "kontrak_id",
+          "references": "kontrak",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Logbook",
+      "table": "logbook",
+      "resource_type": "logbook",
+      "phase": "proses",
+      "label": "Logbook Kemajuan",
+      "columns": [
+        {
+          "name": "periode",
+          "type": "string",
+          "length": 20,
+          "nullable": false
+        },
+        {
+          "name": "isi_kemajuan",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "tanggal_isi",
+          "type": "date",
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Monev",
+      "table": "monev",
+      "resource_type": "monev",
+      "phase": "proses",
+      "label": "Monitoring dan Evaluasi",
+      "columns": [
+        {
+          "name": "catatan",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "terjadwal",
+            "selesai"
+          ],
+          "nullable": false,
+          "default": "terjadwal"
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        },
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": false,
+          "note": "Reviewer/pemonev (nidn_reviewer)",
+          "relation_name": "reviewer"
+        }
+      ]
+    },
+    {
+      "model": "IntegrasiKurikulum",
+      "table": "integrasi_kurikulum",
+      "resource_type": "integrasi-kurikulum",
+      "phase": "proses",
+      "label": "Integrasi Kurikulum",
+      "columns": [
+        {
+          "name": "mata_kuliah",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        },
+        {
+          "name": "rps_tautan",
+          "type": "string",
+          "length": 255,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Publikasi",
+      "table": "publikasi",
+      "resource_type": "publikasi",
+      "phase": "luaran",
+      "label": "Publikasi",
+      "columns": [
+        {
+          "name": "judul",
+          "type": "string",
+          "length": 250,
+          "nullable": false
+        },
+        {
+          "name": "jurnal_prosiding",
+          "type": "string",
+          "length": 150,
+          "nullable": true
+        },
+        {
+          "name": "indeksasi",
+          "type": "enum",
+          "values": [
+            "scopus",
+            "sinta_1",
+            "sinta_2",
+            "sinta_3",
+            "sinta_4",
+            "sinta_5",
+            "sinta_6",
+            "nasional_non_sinta"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "tahun",
+          "type": "year",
+          "nullable": false
+        },
+        {
+          "name": "doi",
+          "type": "string",
+          "length": 100,
+          "nullable": true
+        },
+        {
+          "name": "lisensi",
+          "type": "string",
+          "length": 20,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Hki",
+      "table": "hki",
+      "resource_type": "hki",
+      "phase": "luaran",
+      "label": "Kekayaan Intelektual",
+      "columns": [
+        {
+          "name": "jenis",
+          "type": "enum",
+          "values": [
+            "paten",
+            "hak_cipta",
+            "desain_industri",
+            "merek",
+            "lainnya"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "diajukan",
+            "diperiksa_substantif",
+            "terbit",
+            "ditolak"
+          ],
+          "nullable": false,
+          "default": "diajukan"
+        },
+        {
+          "name": "nomor_sertifikat",
+          "type": "string",
+          "length": 50,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "ProdukAdopsi",
+      "table": "produk_adopsi",
+      "resource_type": "produk-adopsi",
+      "phase": "luaran",
+      "label": "Produk/Purwarupa Adopsi",
+      "columns": [
+        {
+          "name": "nama_produk",
+          "type": "string",
+          "length": 150,
+          "nullable": false
+        },
+        {
+          "name": "bukti_adopsi",
+          "type": "string",
+          "length": 255,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        },
+        {
+          "column": "mitra_id",
+          "references": "mitra",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "model": "LaporanAkhir",
+      "table": "laporan_akhir",
+      "resource_type": "laporan-akhir",
+      "phase": "luaran",
+      "label": "Laporan Akhir",
+      "columns": [
+        {
+          "name": "dokumen_url",
+          "type": "string",
+          "length": 255,
+          "nullable": false
+        },
+        {
+          "name": "tanggal_submit",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "status_verifikasi",
+          "type": "enum",
+          "values": [
+            "belum",
+            "terverifikasi"
+          ],
+          "nullable": false,
+          "default": "belum"
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Spj",
+      "table": "spj",
+      "resource_type": "spj",
+      "phase": "luaran",
+      "label": "Surat Pertanggungjawaban",
+      "columns": [
+        {
+          "name": "jumlah_realisasi",
+          "type": "decimal",
+          "precision": 15,
+          "scale": 2,
+          "nullable": false
+        },
+        {
+          "name": "dokumen_url",
+          "type": "string",
+          "length": 255,
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "laporan_akhir_id",
+          "references": "laporan_akhir",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Sitasi",
+      "table": "sitasi",
+      "resource_type": "sitasi",
+      "phase": "dampak",
+      "label": "Sitasi",
+      "columns": [
+        {
+          "name": "jumlah_sitasi",
+          "type": "integer",
+          "nullable": false,
+          "default": 0
+        },
+        {
+          "name": "tahun",
+          "type": "year",
+          "nullable": false
+        },
+        {
+          "name": "sumber",
+          "type": "enum",
+          "values": [
+            "google_scholar",
+            "sinta",
+            "scopus"
+          ],
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "publikasi_id",
+          "references": "publikasi",
+          "nullable": true
+        },
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Rekognisi",
+      "table": "rekognisi",
+      "resource_type": "rekognisi",
+      "phase": "dampak",
+      "label": "Rekognisi",
+      "columns": [
+        {
+          "name": "jenis",
+          "type": "string",
+          "length": 100,
+          "nullable": false
+        },
+        {
+          "name": "deskripsi",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "tahun",
+          "type": "year",
+          "nullable": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "dosen_id",
+          "references": "dosen",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "Kerjasama",
+      "table": "kerjasama",
+      "resource_type": "kerjasama",
+      "phase": "dampak",
+      "label": "Kerja Sama",
+      "columns": [
+        {
+          "name": "ruang_lingkup",
+          "type": "string",
+          "length": 200,
+          "nullable": false
+        },
+        {
+          "name": "tanggal_mulai",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "tanggal_akhir",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "aktif",
+            "berakhir",
+            "diperpanjang"
+          ],
+          "nullable": false,
+          "default": "aktif"
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "mitra_id",
+          "references": "mitra",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "model": "SurveiDampak",
+      "table": "survei_dampak",
+      "resource_type": "survei-dampak",
+      "phase": "dampak",
+      "label": "Survei Dampak",
+      "columns": [
+        {
+          "name": "hasil",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "testimoni",
+          "type": "text",
+          "nullable": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "mitra_id",
+          "references": "mitra",
+          "nullable": false
+        },
+        {
+          "column": "proposal_id",
+          "references": "proposal",
+          "nullable": true
+        }
+      ]
+    }
+  ]
+}
