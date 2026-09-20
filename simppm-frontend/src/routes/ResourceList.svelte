@@ -75,6 +75,7 @@
     const teks = formatNilaiTabel(atribut, mentah);
     return atribut.type === 'text' || atribut.type === 'string' ? potongTeks(teks, 80) : teks;
   }
+
 </script>
 
 {#if !entityMeta}
@@ -82,7 +83,7 @@
 {:else}
   <div class="list-header">
     <div>
-      <h1 style="font-size:20px;">{entityMeta.label}</h1>
+      <h1 id="PageTitle" style="font-size:20px;">{entityMeta.label}</h1>
       <p class="muted" style="margin:2px 0 0;font-size:13px;">
         {halamanTerakhir > 1 ? `Halaman ${halaman} dari ${halamanTerakhir}` : `${rows.length} data`}
       </p>
