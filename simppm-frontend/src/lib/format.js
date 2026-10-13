@@ -2,6 +2,7 @@
 // oleh komponen generik ResourceList & ResourceForm.
 
 import { findEntity } from './entities.meta.js';
+import { apakahUang, labelEnum } from './ui.js';
 
 /** Format angka desimal sebagai mata uang Rupiah untuk tampilan tabel. */
 export function formatRupiah(value) {
@@ -27,7 +28,10 @@ export function formatNilaiTabel(attr, value) {
       return value ? 'Ya' : 'Tidak';
     case 'date':
       return formatTanggal(value);
+    case 'enum':
+      return labelEnum(value);
     case 'decimal':
+      if (apakahUang(attr)) return formatRupiah(value);
       return typeof value === 'string' || typeof value === 'number' ? Number(value).toLocaleString('id-ID') : value;
     default:
       return String(value);

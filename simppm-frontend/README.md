@@ -1,7 +1,7 @@
 # SIMPPM Frontend (Svelte, Uncoupled)
 
 Frontend Sistem Informasi Pengelolaan Penelitian dan Pengabdian kepada
-Masyarakat (SIMPPM) — dibangun dengan Svelte 5 + Vite, sebagai **basis
+Masyarakat (SIMPPM) — dibangun dengan Svelte 5 + Vite (UI: Tailwind CSS v4 + daisyUI v5), sebagai **basis
 kode yang sepenuhnya terpisah (uncoupled)** dari backend Laravel/JSON:API.
 Frontend ini hanya berkomunikasi dengan backend lewat HTTP (JSON:API),
 tidak berbagi kode, proses, maupun basis data apa pun dengan backend.
@@ -25,7 +25,7 @@ Selaras dengan prinsip *12-factor app* yang diterapkan di backend (lihat
 
 ```
 src/
-├─ app.css                  # Token desain global & kelas utilitas (.btn, .card, .field, dst.)
+├─ app.css                  # Tailwind CSS v4 + daisyUI v5: tema terang `simppm` & gelap `simppm-gelap`
 ├─ main.js                  # Entry point Vite/Svelte
 ├─ App.svelte               # Root shell: routing (svelte-spa-router) + penjaga rute (route guard)
 ├─ lib/

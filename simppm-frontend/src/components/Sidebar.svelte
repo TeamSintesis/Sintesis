@@ -1,97 +1,93 @@
 <script>
-  import active from 'svelte-spa-router/active';
+  // Navigasi utama: entitas dikelompokkan per fase siklus PPM. Di layar
+  // besar tampil tetap (drawer terbuka), di layar kecil sebagai drawer
+  // geser yang dibuka dari tombol menu di Topbar (lihat App.svelte).
+  import { router } from 'svelte-spa-router';
   import { entitiesByPhase, PHASE_LABELS, PHASE_ORDER } from '../lib/entities.meta.js';
+  import { FASE_UI } from '../lib/ui.js';
+  import Icon from './Icon.svelte';
 
   const grouped = entitiesByPhase();
 
-  // regexparam menganggap "/x/*" hanya cocok bila ada garis miring setelah
-  // "x" (tidak cocok untuk path persis "/x"), jadi pola aktif dibuat manual
-  // agar menu tetap tersorot baik di "/dosen" maupun "/dosen/1/ubah".
-  function polaAktif(resourceType) {
-    return new RegExp(`^/${resourceType}(/.*)?$`);
+  // Cocok untuk "/dosen", "/dosen/tambah", maupun "/dosen/1/ubah".
+  function aktif(resourceType) {
+    const lokasi = router.location;
+    return lokasi === `/${resourceType}` || lokasi.startsWith(`/${resourceType}/`);
   }
+
+  let faseAktif = $derived(
+    PHASE_ORDER.find((phase) => grouped[phase].some((e) => aktif(e.resourceType))) ?? null
+  );
+
+  // Grup fase dapat dilipat; grup yang memuat menu aktif selalu dibuka.
+  let faseTerbuka = $state(Object.fromEntries(PHASE_ORDER.map((p) => [p, true])));
+  $effect(() => {
+    if (faseAktif) faseTerbuka[faseAktif] = true;
+  });
 </script>
 
-<nav class="sidebar">
-  <a class="brand" href="#/" use:active={{ path: '/', className: 'is-active' }}>
-    <span class="brand-mark">Σ</span>
-    <span>SIMPPM</span>
+<aside class="flex min-h-full w-72 flex-col border-r border-base-300 bg-base-100">
+  <a href="#/" class="flex items-center gap-3 px-5 py-5">
+    <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-content shadow-sm">
+      <Icon nama="graduation-cap" class="size-6" />
+    </span>
+    <span class="min-w-0 leading-tight">
+      <span class="block text-lg font-extrabold tracking-tight">SIMPPM</span>
+      <span class="block truncate text-xs text-base-content/60">Penelitian &amp; Pengabdian</span>
+    </span>
   </a>
 
-  <div class="menu-scroll">
+  <nav class="scrollbar-tipis flex-1 overflow-y-auto px-3 pb-6" aria-label="Menu utama">
+    <ul class="menu w-full gap-0.5 p-0">
+      <li>
+        <a href="#/" class:menu-active={router.location === '/'} class="font-medium">
+          <Icon nama="layout-dashboard" class="size-[1.1rem]" />
+          Dashboard
+        </a>
+      </li>
+    </ul>
+
     {#each PHASE_ORDER as phase}
-      <div class="phase-group">
-        <div class="phase-title">{PHASE_LABELS[phase]}</div>
-        {#each grouped[phase] as entity}
-          <a
-            class="menu-item"
-            href={`#/${entity.resourceType}`}
-            use:active={{ path: polaAktif(entity.resourceType), className: 'is-active' }}
-          >
-            {entity.label}
-          </a>
-        {/each}
+      {@const ui = FASE_UI[phase]}
+      <div class="mt-4">
+        <button
+          type="button"
+          class="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[0.7rem] font-bold tracking-wider text-base-content/50 uppercase hover:text-base-content"
+          aria-expanded={faseTerbuka[phase]}
+          onclick={() => (faseTerbuka[phase] = !faseTerbuka[phase])}
+        >
+          <span class="grid size-5 place-items-center rounded-md {ui.latar} {ui.teks}">
+            <Icon nama={ui.ikon} class="size-3.5" strokeWidth={2.5} />
+          </span>
+          <span class="flex-1">{PHASE_LABELS[phase]}</span>
+          <span class="badge badge-ghost badge-xs font-semibold">{grouped[phase].length}</span>
+          <Icon
+            nama="chevron-down"
+            class="size-3.5 transition-transform {faseTerbuka[phase] ? '' : '-rotate-90'}"
+          />
+        </button>
+
+        {#if faseTerbuka[phase]}
+          <ul class="menu mt-1 w-full gap-0.5 p-0">
+            {#each grouped[phase] as entity}
+              <li>
+                <a
+                  href={`#/${entity.resourceType}`}
+                  class="text-[0.84rem]"
+                  class:menu-active={aktif(entity.resourceType)}
+                  title={entity.label}
+                >
+                  <span class="truncate">{entity.label}</span>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        {/if}
       </div>
     {/each}
-  </div>
-</nav>
+  </nav>
 
-<style>
-  .sidebar {
-    width: 248px;
-    flex-shrink: 0;
-    background: #16233a;
-    color: #cbd5e1;
-    height: 100vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 20px;
-    font-weight: 700;
-    font-size: 16px;
-    color: #fff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .brand:hover { text-decoration: none; }
-  .brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: #1f5aa6;
-    font-size: 14px;
-  }
-  .menu-scroll { padding: 10px 0 20px; flex: 1; overflow-y: auto; }
-  .phase-group { margin-bottom: 6px; }
-  .phase-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #7d8ba1;
-    padding: 14px 20px 6px;
-    font-weight: 700;
-  }
-  .menu-item {
-    display: block;
-    padding: 7px 20px;
-    font-size: 14px;
-    color: #cbd5e1;
-    border-left: 3px solid transparent;
-  }
-  .menu-item:hover { background: rgba(255, 255, 255, 0.05); text-decoration: none; color: #fff; }
-  :global(.menu-item.is-active) {
-    background: rgba(31, 90, 166, 0.25);
-    border-left-color: #4f8fd8;
-    color: #fff;
-    font-weight: 600;
-  }
-</style>
+  <div class="border-t border-base-300 px-5 py-3 text-xs text-base-content/50">
+    Siklus PPM: Masukan → Proses → Luaran → Dampak
+  </div>
+</aside>
