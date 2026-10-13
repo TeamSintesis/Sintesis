@@ -2,7 +2,7 @@
   let { label = 'Memuat…' } = $props();
 </script>
 
-<div style="display:flex;align-items:center;gap:10px;padding:24px 0;color:var(--color-text-muted);">
-  <div class="spinner"></div>
-  <span>{label}</span>
+<div class="flex items-center justify-center gap-3 py-10 text-base-content/60">
+  <span class="loading loading-spinner loading-md text-primary"></span>
+  <span class="text-sm">{label}</span>
 </div>

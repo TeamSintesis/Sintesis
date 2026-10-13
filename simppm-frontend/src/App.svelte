@@ -17,6 +17,7 @@
 
   import Sidebar from './components/Sidebar.svelte';
   import Topbar from './components/Topbar.svelte';
+  import Toaster from './components/Toaster.svelte';
 
   /** Pre-condition rute: hanya lanjut bila pengguna sudah login. */
   const wajibLogin = () => isAuthenticated();
@@ -34,38 +35,40 @@
     push('/login');
   }
 
+  const ID_DRAWER = 'drawer-navigasi';
+
   // Halaman login ditampilkan tanpa sidebar/topbar (layar penuh).
   let tampilkanShell = $derived($session !== null && router.location !== '/login');
+
+  // Drawer (layar kecil) ditutup otomatis setiap kali berpindah halaman.
+  let drawerTerbuka = $state(false);
+  $effect(() => {
+    void router.location;
+    drawerTerbuka = false;
+  });
 </script>
 
 {#if tampilkanShell}
-  <div class="app-shell">
-    <Sidebar />
-    <div class="app-main">
-      <Topbar />
-      <div class="app-content">
-        <Router {routes} onConditionsFailed={tanganiConditionsFailed} />
-      </div>
+  <div class="drawer lg:drawer-open">
+    <input id={ID_DRAWER} type="checkbox" class="drawer-toggle" bind:checked={drawerTerbuka} />
+    <div class="drawer-content flex min-h-dvh min-w-0 flex-col">
+      <Topbar idDrawer={ID_DRAWER} />
+      <main class="flex-1 px-4 py-6 md:px-6 lg:px-8">
+        <div class="mx-auto w-full max-w-7xl">
+          <Router {routes} onConditionsFailed={tanganiConditionsFailed} restoreScrollState />
+        </div>
+      </main>
+      <footer class="px-4 py-4 text-center text-xs text-base-content/50 md:px-8">
+        SIMPPM — Sistem Informasi Pengelolaan Penelitian dan Pengabdian kepada Masyarakat
+      </footer>
+    </div>
+    <div class="drawer-side z-40">
+      <label for={ID_DRAWER} aria-label="Tutup menu" class="drawer-overlay"></label>
+      <Sidebar />
     </div>
   </div>
 {:else}
   <Router {routes} onConditionsFailed={tanganiConditionsFailed} />
 {/if}
 
-<style>
-  .app-shell {
-    display: flex;
-    min-height: 100vh;
-  }
-  .app-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .app-content {
-    flex: 1;
-    padding: 24px;
-    overflow-x: hidden;
-  }
-</style>
+<Toaster />

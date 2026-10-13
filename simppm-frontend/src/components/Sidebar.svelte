@@ -1,197 +1,93 @@
 <script>
-  import active from 'svelte-spa-router/active';
+  // Navigasi utama: entitas dikelompokkan per fase siklus PPM. Di layar
+  // besar tampil tetap (drawer terbuka), di layar kecil sebagai drawer
+  // geser yang dibuka dari tombol menu di Topbar (lihat App.svelte).
+  import { router } from 'svelte-spa-router';
   import { entitiesByPhase, PHASE_LABELS, PHASE_ORDER } from '../lib/entities.meta.js';
+  import { FASE_UI } from '../lib/ui.js';
+  import Icon from './Icon.svelte';
 
   const grouped = entitiesByPhase();
 
-  let isOpen = true;
-
-  function toggleSidebar() {
-    isOpen = !isOpen;
+  // Cocok untuk "/dosen", "/dosen/tambah", maupun "/dosen/1/ubah".
+  function aktif(resourceType) {
+    const lokasi = router.location;
+    return lokasi === `/${resourceType}` || lokasi.startsWith(`/${resourceType}/`);
   }
 
-  // regexparam menganggap "/x/*" hanya cocok bila ada garis miring setelah
-  // "x" (tidak cocok untuk path persis "/x"), jadi pola aktif dibuat manual
-  // agar menu tetap tersorot baik di "/dosen" maupun "/dosen/1/ubah".
-  function polaAktif(resourceType) {
-    return new RegExp(`^/${resourceType}(/.*)?$`);
-  }
+  let faseAktif = $derived(
+    PHASE_ORDER.find((phase) => grouped[phase].some((e) => aktif(e.resourceType))) ?? null
+  );
+
+  // Grup fase dapat dilipat; grup yang memuat menu aktif selalu dibuka.
+  let faseTerbuka = $state(Object.fromEntries(PHASE_ORDER.map((p) => [p, true])));
+  $effect(() => {
+    if (faseAktif) faseTerbuka[faseAktif] = true;
+  });
 </script>
 
-<nav class="sidebar" class:closed={!isOpen}>
-  <div class="brand-row">
-    <a class="brand" href="#/" use:active={{ path: '/', className: 'is-active' }}>
-      <span class="brand-mark">Σ</span>
-      {#if isOpen}<span>SIMPPM</span>{/if}
-    </a>
-    <button class="toggle-btn" on:click={toggleSidebar} aria-label="Toggle sidebar">
-      {#if isOpen}
-        <!-- ikon panah kiri (tutup) -->
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      {:else}
-        <!-- ikon panah kanan (buka) -->
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      {/if}
-    </button>
-  </div>
+<aside class="flex min-h-full w-72 flex-col border-r border-base-300 bg-base-100">
+  <a href="#/" class="flex items-center gap-3 px-5 py-5">
+    <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-content shadow-sm">
+      <Icon nama="graduation-cap" class="size-6" />
+    </span>
+    <span class="min-w-0 leading-tight">
+      <span class="block text-lg font-extrabold tracking-tight">SIMPPM</span>
+      <span class="block truncate text-xs text-base-content/60">Penelitian &amp; Pengabdian</span>
+    </span>
+  </a>
 
-  <div class="menu-scroll">
+  <nav class="scrollbar-tipis flex-1 overflow-y-auto px-3 pb-6" aria-label="Menu utama">
+    <ul class="menu w-full gap-0.5 p-0">
+      <li>
+        <a href="#/" class:menu-active={router.location === '/'} class="font-medium">
+          <Icon nama="layout-dashboard" class="size-[1.1rem]" />
+          Dashboard
+        </a>
+      </li>
+    </ul>
+
     {#each PHASE_ORDER as phase}
-      <div class="phase-group">
-        {#if isOpen}
-          <div class="phase-title">{PHASE_LABELS[phase]}</div>
+      {@const ui = FASE_UI[phase]}
+      <div class="mt-4">
+        <button
+          type="button"
+          class="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[0.7rem] font-bold tracking-wider text-base-content/50 uppercase hover:text-base-content"
+          aria-expanded={faseTerbuka[phase]}
+          onclick={() => (faseTerbuka[phase] = !faseTerbuka[phase])}
+        >
+          <span class="grid size-5 place-items-center rounded-md {ui.latar} {ui.teks}">
+            <Icon nama={ui.ikon} class="size-3.5" strokeWidth={2.5} />
+          </span>
+          <span class="flex-1">{PHASE_LABELS[phase]}</span>
+          <span class="badge badge-ghost badge-xs font-semibold">{grouped[phase].length}</span>
+          <Icon
+            nama="chevron-down"
+            class="size-3.5 transition-transform {faseTerbuka[phase] ? '' : '-rotate-90'}"
+          />
+        </button>
+
+        {#if faseTerbuka[phase]}
+          <ul class="menu mt-1 w-full gap-0.5 p-0">
+            {#each grouped[phase] as entity}
+              <li>
+                <a
+                  href={`#/${entity.resourceType}`}
+                  class="text-[0.84rem]"
+                  class:menu-active={aktif(entity.resourceType)}
+                  title={entity.label}
+                >
+                  <span class="truncate">{entity.label}</span>
+                </a>
+              </li>
+            {/each}
+          </ul>
         {/if}
-        {#each grouped[phase] as entity}
-          <a
-            class="menu-item"
-            href={`#/${entity.resourceType}`}
-            title={entity.label}
-            use:active={{ path: polaAktif(entity.resourceType), className: 'is-active' }}
-          >
-            <span class="menu-label">{entity.label}</span>
-          </a>
-        {/each}
       </div>
     {/each}
+  </nav>
+
+  <div class="border-t border-base-300 px-5 py-3 text-xs text-base-content/50">
+    Siklus PPM: Masukan → Proses → Luaran → Dampak
   </div>
-</nav>
-
-<style>
-  .sidebar {
-    width: 240px;
-    flex-shrink: 0;
-    background: #ffffff;
-    color: #475569;
-    height: 100vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    border-right: 1px solid #e5e7eb;
-    transition: width 0.2s ease;
-  }
-
-  .sidebar.closed {
-    width: 68px;
-  }
-
-  .brand-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 14px;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.01em;
-    color: #0f172a;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .brand:hover { text-decoration: none; }
-
-  .brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    background: #0f172a;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .toggle-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-  .toggle-btn:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-  }
-
-  .menu-scroll {
-    padding: 8px 12px 24px;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .phase-group {
-    margin-bottom: 4px;
-  }
-
-  .phase-title {
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #94a3b8;
-    padding: 16px 10px 6px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    margin: 1px 0;
-    border-radius: 8px;
-    font-size: 13.5px;
-    font-weight: 500;
-    color: #475569;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .menu-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .menu-item:hover {
-    background: #f1f5f9;
-    text-decoration: none;
-    color: #0f172a;
-  }
-
-  :global(.menu-item.is-active) {
-    background: #eef2ff;
-    color: #3b3f8f;
-    font-weight: 600;
-  }
-
-  /* scrollbar tipis biar makin rapi */
-  .menu-scroll::-webkit-scrollbar {
-    width: 5px;
-  }
-  .menu-scroll::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 3px;
-  }
-</style>
+</aside>

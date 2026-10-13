@@ -1,62 +1,67 @@
 <script>
   // Kontrol paginasi generik untuk ResourceList, mengikuti meta JSON:API
   // gaya `page[number]`/`page[size]` (Laravel JSON:API page-based paginator).
-  let { page = 1, hasMore = false, loading = false, onChange } = $props();
+  import Icon from './Icon.svelte';
+
+  let { page = 1, lastPage = 1, total = null, pageSize = 15, loading = false, onChange } = $props();
+
+  // Nomor halaman yang ditampilkan: selalu halaman pertama & terakhir,
+  // ditambah halaman di sekitar halaman aktif; celah ditandai "…".
+  let nomorHalaman = $derived.by(() => {
+    const hasil = [];
+    for (let i = 1; i <= lastPage; i++) {
+      if (i === 1 || i === lastPage || Math.abs(i - page) <= 1) hasil.push(i);
+      else if (hasil[hasil.length - 1] !== '…') hasil.push('…');
+    }
+    return hasil;
+  });
+
+  let dari = $derived(total ? (page - 1) * pageSize + 1 : 0);
+  let sampai = $derived(total ? Math.min(page * pageSize, total) : 0);
 </script>
 
-<div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:16px;">
-  <button class="btn btn-small" disabled={page <= 1 || loading} onclick={() => onChange(page - 1)}>
-    ← Sebelumnya
-  </button>
-  <span class="muted" style="font-size:13px;">Halaman <strong>{page}</strong></span>
-  <button class="btn btn-small" disabled={!hasMore || loading} onclick={() => onChange(page + 1)}>
-    Berikutnya →
-  </button>
+<div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
+  <p class="text-sm text-base-content/60">
+    {#if total !== null}
+      Menampilkan <span class="font-semibold text-base-content">{dari}–{sampai}</span> dari
+      <span class="font-semibold text-base-content">{total}</span> data
+    {:else}
+      Halaman <span class="font-semibold text-base-content">{page}</span> dari {lastPage}
+    {/if}
+  </p>
+
+  {#if lastPage > 1}
+    <div class="join">
+      <button
+        class="join-item btn btn-sm"
+        aria-label="Halaman sebelumnya"
+        disabled={page <= 1 || loading}
+        onclick={() => onChange(page - 1)}
+      >
+        <Icon nama="chevron-left" class="size-4" />
+      </button>
+      {#each nomorHalaman as n}
+        {#if n === '…'}
+          <button class="join-item btn btn-sm btn-disabled hidden sm:inline-flex" tabindex="-1">…</button>
+        {:else}
+          <button
+            class="join-item btn btn-sm {n === page ? 'btn-primary' : 'hidden sm:inline-flex'}"
+            aria-current={n === page ? 'page' : undefined}
+            disabled={loading}
+            onclick={() => n !== page && onChange(n)}
+          >
+            {n}
+          </button>
+        {/if}
+      {/each}
+      <button
+        class="join-item btn btn-sm"
+        aria-label="Halaman berikutnya"
+        disabled={page >= lastPage || loading}
+        onclick={() => onChange(page + 1)}
+      >
+        <Icon nama="chevron-right" class="size-4" />
+      </button>
+    </div>
+  {/if}
 </div>
-
-<style>
-  .muted {
-    color: #6b7280;
-    user-select: none;
-  }
-
-  .muted strong {
-    color: #111827;
-    font-weight: 600;
-  }
-
-  .btn.btn-small {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
-    color: #374151;
-    background-color: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    transition: all 0.15s ease-in-out;
-  }
-
-  .btn.btn-small:hover:not(:disabled) {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
-    color: #111827;
-  }
-
-  .btn.btn-small:focus-visible {
-    outline: 2px solid #2563eb;
-    outline-offset: 1px;
-  }
-
-  .btn.btn-small:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    background-color: #f3f4f6;
-    border-color: #e5e7eb;
-    box-shadow: none;
-  }
-</style>

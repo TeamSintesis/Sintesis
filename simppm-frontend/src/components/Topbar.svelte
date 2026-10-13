@@ -1,65 +1,32 @@
 <script>
-  import { push } from 'svelte-spa-router';
-  import { findEntity } from '../lib/entities.meta.js';
+  // Bilah atas: tombol menu (layar kecil), breadcrumb lokasi, pengalih
+  // tema, dan menu pengguna (nama, peran, keluar).
+  import { push, router } from 'svelte-spa-router';
+  import { findEntity, PHASE_LABELS } from '../lib/entities.meta.js';
   import { session, logout, PERAN_LABELS } from '../lib/auth.js';
+  import { tema, gantiTema, TEMA_GELAP } from '../lib/theme.js';
+  import { inisial } from '../lib/ui.js';
+  import Icon from './Icon.svelte';
 
-  let resource = $state('');
-  let entityMeta = $state(null);
+  let { idDrawer } = $props();
 
-  function updateEntityMeta() {
-    resource = window.location.hash
-      .replace(/^#\/?/, '')
-      .split('/')[0];
-
-    entityMeta = findEntity(resource);
-
-    console.log('resource:', resource);
-    console.log('entityMeta:', entityMeta.label);
-  }
-
-  updateEntityMeta();
-
-  $effect(() => {
-    const handleHashChange = () => {
-      updateEntityMeta();
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+  // Breadcrumb diturunkan dari lokasi rute: /:resource[/tambah | /:id/ubah].
+  let breadcrumb = $derived.by(() => {
+    const [resource, kedua, ketiga] = router.location.replace(/^\//, '').split('/');
+    const entitas = resource ? findEntity(resource) : null;
+    if (!entitas) return [{ label: 'Dashboard' }];
+    const jejak = [
+      { label: PHASE_LABELS[entitas.phase] },
+      { label: entitas.label, href: `#/${entitas.resourceType}` },
+    ];
+    if (kedua === 'tambah') jejak.push({ label: 'Tambah' });
+    else if (ketiga === 'ubah') jejak.push({ label: 'Ubah' });
+    else jejak[1] = { label: entitas.label };
+    return jejak;
   });
 
   let sedangKeluar = $state(false);
-  let dropdownTerbuka = $state(false);
 
-  function dapatkanInisial(nama) {
-    if (!nama) return 'U';
-    const kata = nama.trim().split(/\s+/);
-    if (kata.length === 1) return kata[0][0].toUpperCase();
-    return (kata[0][0] + kata[kata.length - 1][0]).toUpperCase();
-  }
-
-  function dapatkanSalam() {
-    const jam = new Date().getHours();
-    if (jam >= 3 && jam < 11) return 'Selamat pagi';
-    if (jam >= 11 && jam < 15) return 'Selamat siang';
-    if (jam >= 15 && jam < 18) return 'Selamat sore';
-    return 'Selamat malam';
-  }
-
-  function toggleDropdown(e) {
-    e.stopPropagation();
-    dropdownTerbuka = !dropdownTerbuka;
-  }
-
-  function tutupDropdown(e) {
-    if (dropdownTerbuka && !e.target.closest('.user-menu-container')) {
-      dropdownTerbuka = false;
-    }
-  }
-  
   async function keluar() {
     sedangKeluar = true;
     await logout();
@@ -67,238 +34,79 @@
   }
 </script>
 
-<svelte:window onclick={tutupDropdown} />
+<header class="navbar sticky top-0 z-30 min-h-16 gap-2 border-b border-base-300 bg-base-100/85 px-3 backdrop-blur md:px-6">
+  <div class="flex min-w-0 flex-1 items-center gap-2">
+    <label for={idDrawer} class="btn btn-ghost btn-square btn-sm lg:hidden" aria-label="Buka menu">
+      <Icon nama="menu" />
+    </label>
 
-<header class="topbar">
-  <div class="topbar-left">
-    {#if entityMeta !== null}
-      <h1>{entityMeta.label}</h1>
-    {/if}
+    <div class="breadcrumbs min-w-0 py-0 text-sm">
+      <ul>
+        <li>
+          <a href="#/" class="text-base-content/60" aria-label="Beranda">
+            <Icon nama="home" class="size-4" />
+          </a>
+        </li>
+        {#each breadcrumb as item, i}
+          <li class={i < breadcrumb.length - 1 ? 'hidden text-base-content/60 sm:inline-flex' : 'font-semibold'}>
+            {#if item.href}<a href={item.href}>{item.label}</a>{:else}<span class="truncate">{item.label}</span>{/if}
+          </li>
+        {/each}
+      </ul>
+    </div>
   </div>
 
-  {#if $session}
-    <div class="topbar-right user-menu-container">
-      <div class="greeting-box">
-        <span class="greeting-text">{dapatkanSalam()},</span>
-        <span class="user-display-name">{$session.user.name}</span>
-      </div>
+  <div class="flex items-center gap-1">
+    <button
+      class="btn btn-ghost btn-square btn-sm"
+      onclick={gantiTema}
+      aria-label={$tema === TEMA_GELAP ? 'Gunakan tema terang' : 'Gunakan tema gelap'}
+      title={$tema === TEMA_GELAP ? 'Tema terang' : 'Tema gelap'}
+    >
+      <Icon nama={$tema === TEMA_GELAP ? 'sun' : 'moon'} />
+    </button>
 
-      <div class="avatar-wrapper">
-        <button class="avatar-btn" onclick={toggleDropdown} aria-label="Menu pengguna">
-          <div class="avatar">
-            {dapatkanInisial($session.user.name)}
-          </div>
-        </button>
-
-        {#if dropdownTerbuka}
-          <div class="dropdown-menu">
-            <div class="dropdown-header">
-              <div class="dropdown-name">{$session.user.name}</div>
-              <div class="dropdown-role">
-                {PERAN_LABELS[$session.user.peran] ?? $session.user.peran}
-              </div>
+    {#if $session}
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost h-auto gap-3 px-2 py-1.5" aria-label="Menu pengguna">
+          <div class="avatar avatar-placeholder">
+            <div class="w-9 rounded-full bg-primary text-primary-content">
+              <span class="text-sm font-bold">{inisial($session.user.name)}</span>
             </div>
-
-            <div class="dropdown-divider"></div>
-
-            <button class="logout-btn" onclick={keluar} disabled={sedangKeluar}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              {sedangKeluar ? 'Keluar…' : 'Keluar'}
-            </button>
           </div>
-        {/if}
+          <div class="hidden text-left leading-tight md:block">
+            <div class="max-w-40 truncate text-sm font-semibold">{$session.user.name}</div>
+            <div class="text-xs font-normal text-base-content/60">
+              {PERAN_LABELS[$session.user.peran] ?? $session.user.peran}
+            </div>
+          </div>
+          <Icon nama="chevron-down" class="hidden size-4 text-base-content/50 md:block" />
+        </div>
+        <div tabindex="-1" class="dropdown-content z-40 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+          <div class="px-3 py-2">
+            <div class="truncate font-semibold">{$session.user.name}</div>
+            {#if $session.user.email}
+              <div class="truncate text-xs text-base-content/60">{$session.user.email}</div>
+            {/if}
+            <span class="badge badge-primary badge-soft badge-sm mt-2">
+              {PERAN_LABELS[$session.user.peran] ?? $session.user.peran}
+            </span>
+          </div>
+          <div class="divider my-1"></div>
+          <ul class="menu w-full p-0">
+            <li>
+              <button class="text-error" onclick={keluar} disabled={sedangKeluar}>
+                {#if sedangKeluar}
+                  <span class="loading loading-spinner loading-xs"></span>
+                {:else}
+                  <Icon nama="log-out" class="size-4" />
+                {/if}
+                Keluar
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-  {/if}
+    {/if}
+  </div>
 </header>
-
-<style>
-  .topbar {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 28px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-  }
-
-  .topbar-left h1 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #334155;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: relative;
-  }
-
-  .greeting-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: #475569;
-  }
-
-  .greeting-text {
-    font-weight: 400;
-    color: #64748b;
-  }
-
-  .user-display-name {
-    font-weight: 600;
-    color: #0f172a;
-  }
-
-  .avatar-wrapper {
-    position: relative;
-  }
-
-  .avatar-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    outline: none;
-    border-radius: 50%;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .avatar-btn:hover {
-    transform: scale(1.04);
-  }
-
-  .avatar-btn:focus-visible {
-    box-shadow: 0 0 0 3px #c7d2fe;
-  }
-
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #4338ca;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    user-select: none;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    width: 220px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-    padding: 8px;
-    z-index: 50;
-    animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .dropdown-header {
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .dropdown-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-    line-height: 1.3;
-  }
-
-  .dropdown-role {
-    display: inline-block;
-    align-self: flex-start;
-    background: #eef2ff;
-    color: #4338ca;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  .dropdown-divider {
-    height: 1px;
-    background: #f1f5f9;
-    margin: 6px 0;
-  }
-
-  .logout-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: #ef4444;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    text-align: left;
-  }
-
-  .logout-btn:hover:not(:disabled) {
-    background: #fef2f2;
-  }
-
-  .logout-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .logout-btn svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  @media (max-width: 640px) {
-    .greeting-text {
-      display: none;
-    }
-  }
-</style>
